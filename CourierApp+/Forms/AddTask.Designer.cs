@@ -158,7 +158,7 @@ namespace CourierApp_.Forms
             this.MinimizeBox = false;
             this.Name = "AddTask";
             this.ShowInTaskbar = false;
-            this.Text = "AddTask";
+            this.Text = "Добавить груз";
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

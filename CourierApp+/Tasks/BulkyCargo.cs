@@ -2,14 +2,8 @@
 
 namespace CourierApp_.Tasks
 {
-    class BulkyCargo : SimpleCargo
+    internal class BulkyCargo : SimpleCargo
     {
-        public BulkyCargo(string name, int id, bool isFragile, double weight) : base(name, id, isFragile, weight)
-        {
-            if (weight < 5 || weight > 31.5)
-                throw new ArgumentException("invalid weight");
-        }
-
         public override double Price { 
             get
             {
@@ -17,23 +11,20 @@ namespace CourierApp_.Tasks
                 double coefficient = 0;
                 const double min = 295;
 
-                if (this.Weight <= 10)
-                {
+                if (Weight <= 10)
                     coefficient = 12;
-                }
-                else if (this.Weight <= 20)
-                {
+                else if (Weight <= 20)
                     coefficient = 22.1;
-                }
-                else if (this.Weight <= 31.5)
-                {
-                    coefficient = 28.8;
-                }
+                else if (Weight <= 31.5) coefficient = 28.8;
 
-                return Math.Round((this.Weight * coefficient) + min, 2);
+                return Math.Round(Weight * coefficient + min, 2);
             }
         }
-
         
+        public BulkyCargo(string name, int id, bool isFragile, double weight, string destination, DateTime time) : base(name, id, isFragile, weight, destination, time)
+        {
+            if (weight < 5 || weight > 31.5)
+                throw new ArgumentException("invalid weight");
+        }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using CourierApp_.Tasks;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Windows.Forms;
+using CourierApp_.Tasks;
 
 namespace CourierApp_.Forms
 {
@@ -13,7 +13,7 @@ namespace CourierApp_.Forms
         private readonly List<SimpleCargo> _cargos = new List<SimpleCargo>();
         private const string DefaultName = "cargos.json";
         private string CurrentName { get; set; }
-        private int _counter = 0;
+        private int _counter;
         private const int ActionsToAutosave = 5;
         private bool _disableAutoSave = true;
 
@@ -33,7 +33,7 @@ namespace CourierApp_.Forms
             clearList.ShortcutKeys = Keys.Control | Keys.N;
             addCargo.ShortcutKeys = Keys.Control | Keys.P;
             deleteCargo.ShortcutKeys = Keys.Control | Keys.K;
-            
+
             CurrentName = DefaultName;
         }
 
@@ -43,7 +43,7 @@ namespace CourierApp_.Forms
             _counter = 0;
             path ??= CurrentName;
             Text = $"АРМ курьера - [{CurrentName}]";
-            
+
             if (!File.Exists(path))
             {
                 MessageBox.Show("Не найден список грузов. Создан новый.", "Информация");
@@ -63,24 +63,23 @@ namespace CourierApp_.Forms
             }
             catch (JsonException)
             {
-                MessageBox.Show("Файл со списком грузов поврежден. Удалите его или восстановите.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Файл со списком грузов поврежден. Удалите его или восстановите.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
                 return;
             }
 
             foreach (var cargo in tempList)
-            {
-
                 try
                 {
-                    CreateCargo(cargo.Name, cargo.Destination, cargo.Weight, cargo.IsFragile, cargo.Time, cargo.ID, cargo.Status);
+                    CreateCargo(cargo.Name, cargo.Destination, cargo.Weight, cargo.IsFragile, cargo.Time, cargo.ID,
+                        cargo.Status);
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show($@"Найден некорректный груз - ""{cargo.Name}"", ID: {cargo.ID}. Он будет пропущен", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    continue;
+                    MessageBox.Show($@"Найден некорректный груз - ""{cargo.Name}"", ID: {cargo.ID}. Он будет пропущен",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }
 
             statusInfo.Text = $"Загружено доставок - {_cargos.Count}";
             _disableAutoSave = false;
@@ -96,10 +95,11 @@ namespace CourierApp_.Forms
             if (_counter == 0) return;
 
             var dialogResult =
-                MessageBox.Show("Сохранить таблицу перед выходом?", "АРМ курьера", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                MessageBox.Show("Сохранить таблицу перед выходом?", "АРМ курьера", MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
             if (dialogResult == DialogResult.Yes) SaveCargos();
         }
-        
+
         private void CargosViewer_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex == -1) return;
@@ -115,12 +115,14 @@ namespace CourierApp_.Forms
                 case "Status":
                     _cargos[e.RowIndex].Status = GetStatusFromString(value);
                     // нельзя изменить данные выполненого заказа 
-                    if (_cargos[e.RowIndex].Status == StatusType.Completed) CargosViewer.Rows[e.RowIndex].ReadOnly = true;
+                    if (_cargos[e.RowIndex].Status == StatusType.Completed)
+                        CargosViewer.Rows[e.RowIndex].ReadOnly = true;
                     break;
                 case "Time":
                     _cargos[e.RowIndex].Time = DateTime.Parse(value);
                     break;
             }
+
             AutoSave();
         }
 
@@ -135,14 +137,17 @@ namespace CourierApp_.Forms
                     if (!double.TryParse(e.FormattedValue.ToString(), out var testDouble) || testDouble < 0)
                     {
                         e.Cancel = true;
-                        CargosViewer.Rows[e.RowIndex].ErrorText = "Вес должен быть дробным неотрицательным числом.\nТак же вес записывается через запятую.";
+                        CargosViewer.Rows[e.RowIndex].ErrorText =
+                            "Вес должен быть дробным неотрицательным числом.\nТак же вес записывается через запятую.";
                     }
 
                     if (testDouble > 31.5)
                     {
                         e.Cancel = true;
-                        CargosViewer.Rows[e.RowIndex].ErrorText = "Максимальный вес доступный для транспортировки - 31,5 кг.";
+                        CargosViewer.Rows[e.RowIndex].ErrorText =
+                            "Максимальный вес доступный для транспортировки - 31,5 кг.";
                     }
+
                     break;
                 case "Time":
                     if (!DateTime.TryParse(e.FormattedValue.ToString(), out var testData))
@@ -156,6 +161,15 @@ namespace CourierApp_.Forms
                         e.Cancel = true;
                         CargosViewer.Rows[e.RowIndex].ErrorText = "Вы не можете доставить груз в прошлом";
                     }
+
+                    break;
+                case "Destination":
+                    if (e.FormattedValue.ToString().Length == 0)
+                    {
+                        e.Cancel = true;
+                        CargosViewer.Rows[e.RowIndex].ErrorText = "Поле адреса доставки не может быть пустым";
+                    }
+
                     break;
             }
         }
@@ -164,16 +178,17 @@ namespace CourierApp_.Forms
         {
             _cargos.Clear();
             CargosViewer.Rows.Clear();
-            
+
             AutoSave();
-            statusInfo.Text = $"Таблица с доставками очищена!";
+            statusInfo.Text = "Таблица с доставками очищена!";
         }
 
         private void OnDeleteCargo(object sender, EventArgs e)
         {
             if (CargosViewer.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Не выделена строка, удалять нечего!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не выделена строка, удалять нечего!", "Ошибка", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
@@ -185,7 +200,7 @@ namespace CourierApp_.Forms
                 _cargos.RemoveAt(index);
                 CargosViewer.Rows.Remove(row);
             }
-            
+
             SaveCargos();
             statusInfo.Text = $"Удалено доставок - {count}";
             AutoSave();
@@ -196,7 +211,7 @@ namespace CourierApp_.Forms
             _disableAutoSave = true;
 
             var counter = 0;
-            
+
             foreach (DataGridViewRow row in CargosViewer.Rows)
             {
                 if (_cargos[row.Index].Status != StatusType.Completed) continue;
@@ -213,7 +228,10 @@ namespace CourierApp_.Forms
                 statusInfo.Text = $"Удалено ненужных элементов - {counter}.";
                 AutoSave();
             }
-            else { statusInfo.Text = "Не найдено ненужных элементов."; }
+            else
+            {
+                statusInfo.Text = "Не найдено ненужных элементов.";
+            }
         }
 
         private void OnSave(object sender, EventArgs e)
@@ -222,26 +240,27 @@ namespace CourierApp_.Forms
             SaveCargos();
             Text = $"АРМ курьера - [{CurrentName}]";
         }
-        
+
         private void SaveCargos(string path = null)
         {
             path ??= CurrentName;
-            
+
             using var fs = new FileStream(path, FileMode.Create);
             var jsonWriter = new Utf8JsonWriter(fs);
             JsonSerializer.Serialize(jsonWriter, _cargos);
-            
+
             statusInfo.Text = $"Последнее сохраненние в {DateTime.Now.ToShortTimeString()}";
         }
 
-        private void CreateCargo(string name, string address, double weight, bool isFragile, DateTime date, int id = -1, StatusType status = StatusType.Waiting)
+        private void CreateCargo(string name, string address, double weight, bool isFragile, DateTime date, int id = -1,
+            StatusType status = StatusType.Waiting)
         {
             if (id == -1) id = _cargos.Count == 0 ? 1 : _cargos.Last().ID + 1;
 
             if (weight < 5)
-                _cargos.Add(new SmallCargo(name, id, isFragile, weight) { Destination = address, Status = status, Time = date});
+                _cargos.Add(new SmallCargo(name, id, isFragile, weight, address, date) {Status = status});
             else
-                _cargos.Add(new BulkyCargo(name, id, isFragile, weight) { Destination = address, Status = status, Time = date});
+                _cargos.Add(new BulkyCargo(name, id, isFragile, weight, address, date) {Status = status});
 
             var index = CargosViewer.Rows.Add();
             CargosViewer["ID", index].Value = _cargos.Last().ID;
@@ -312,6 +331,7 @@ namespace CourierApp_.Forms
                 Text = $"*АРМ курьера - [{CurrentName}]";
                 return;
             }
+
             _counter = 0;
             SaveCargos();
             Text = $"АРМ курьера - [{CurrentName}]";

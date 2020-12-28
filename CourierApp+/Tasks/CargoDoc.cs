@@ -6,7 +6,6 @@ namespace CourierApp_.Tasks
     {
         public string Name { get; set; }
         public int ID { get; set; }
-        public virtual double Price { get; }
         public double Weight { get; set; }
         public string Destination { get; set; }
         public bool IsFragile { get; set; }

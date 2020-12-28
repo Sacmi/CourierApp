@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace CourierApp_.Forms
@@ -13,7 +8,7 @@ namespace CourierApp_.Forms
         public AddTask()
         {
             InitializeComponent();
-            this.Date = DateTime.Today;
+            Date = DateTime.Today;
         }
 
         public string NameCargo { get; private set; }
@@ -21,18 +16,18 @@ namespace CourierApp_.Forms
         public bool IsFragile { get; private set; }
         public DateTime Date { get; private set; }
         public double Weight { get; private set; }
-        
+
         private bool WeightValidate()
         {
-            if (this.weightField.TextLength == 0 || !double.TryParse(this.weightField.Text, out var weight))
+            if (weightField.TextLength == 0 || !double.TryParse(weightField.Text, out var weight))
             {
-                this.errorProvider.SetError(this.weightField, "Пожалуйста, укажите корректный вес.");
+                errorProvider.SetError(weightField, "Пожалуйста, укажите корректный вес.");
                 return false;
             }
 
             if (weight <= 0 || weight > 31.5)
             {
-                this.errorProvider.SetError(this.weightField, "Допустимый вес: по 31,5 кг.");
+                errorProvider.SetError(weightField, "Допустимый вес: по 31,5 кг.");
                 return false;
             }
 
@@ -41,44 +36,41 @@ namespace CourierApp_.Forms
 
         private void confirm_Click(object sender, EventArgs e)
         {
-            this.errorProvider.Clear();
+            errorProvider.Clear();
             var correct = true;
 
             #region Валидация
 
-            if (this.nameField.TextLength == 0)
+            if (nameField.TextLength == 0)
             {
-                this.errorProvider.SetError(this.nameField, "Пожалуйста, укажите название груза.");
+                errorProvider.SetError(nameField, "Пожалуйста, укажите название груза.");
                 correct = false;
             }
 
             correct = WeightValidate() && correct;
 
-            if (this.addressField.TextLength == 0)
+            if (addressField.TextLength == 0)
             {
-                this.errorProvider.SetError(this.addressField, "Пожалуйста, укажите название груза.");
+                errorProvider.SetError(addressField, "Пожалуйста, укажите название груза.");
                 correct = false;
             }
 
-            if (!correct)
-            {
-                return;
-            }
+            if (!correct) return;
 
             #endregion
 
-            this.NameCargo = this.nameField.Text;
-            this.Address = this.addressField.Text;
-            this.IsFragile = this.isFragileBox.Checked;
-            this.Weight = double.Parse(this.weightField.Text);
+            NameCargo = nameField.Text;
+            Address = addressField.Text;
+            IsFragile = isFragileBox.Checked;
+            Weight = double.Parse(weightField.Text);
 
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
         private void datePicker_ValueChanged(object sender, EventArgs e)
         {
-            this.Date = (DateTime)sender.GetType().GetProperty("Value").GetValue(sender);
+            Date = (DateTime) sender.GetType().GetProperty("Value").GetValue(sender);
         }
     }
 }
